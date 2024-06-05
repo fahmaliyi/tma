@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ATM Registry</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #1b1b1b;
+        color: #fff;
+        padding: 20px;
+        margin: 0;
+      }
+      .container {
+        position: relative;
+        min-height: 100vh;
+      }
+      .navbar {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        right: 20px;
+        background-color: #212121;
+        padding: 10px 0;
+        display: flex;
+        justify-content: space-around;
+        border-radius: 30px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.4);
+      }
+      .tab {
+        padding: 10px 20px;
+        color: #ccc;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border-top-left-radius: 30px;
+        border-top-right-radius: 30px;
+      }
+      .tab:hover {
+        background-color: #333;
+      }
+      .tab.active {
+        background-color: #444;
+        color: #fff;
+      }
+      .content {
+        margin-bottom: 150px; /* Adjust according to navbar height */
+      }
+      form {
+        margin-bottom: 20px;
+        background-color: #212121;
+        padding: 20px;
+        border-radius: 10px;
+      }
+      input[type="text"],
+      input[type="file"] {
+        width: calc(100% - 40px);
+        padding: 10px;
+        margin-bottom: 10px;
+        box-sizing: border-box;
+        background-color: #333;
+        color: #ddd;
+        border: none;
+        border-radius: 5px;
+      }
+      input[type="text"]::placeholder {
+        color: #999;
+      }
+      button {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      #atmList {
+        list-style-type: none;
+        padding: 0;
+      }
+      .atm-item {
+        margin-bottom: 10px;
+        padding: 10px;
+        border: 1px solid #333;
+        background-color: #212121;
+        border-radius: 10px;
+      }
+      img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 10px;
+      }
+      h1,
+      h2 {
+        color: #007bff;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="content" id="addContent">
+        <h1>ATM Registry</h1>
+        <form id="atmForm">
+          <label for="atmName">ATM Name:</label>
+          <input type="text" id="atmName" name="atmName" required /><br />
+          <label for="atmLocation">Location:</label>
+          <input
+            type="text"
+            id="atmLocation"
+            name="atmLocation"
+            required
+          /><br />
+          <label for="atmImage">ATM Image:</label>
+          <input
+            type="file"
+            id="atmImage"
+            name="atmImage"
+            accept="image/*"
+            required
+          /><br />
+          <button type="submit">Register ATM</button>
+        </form>
+        <ul id="atmList"></ul>
+      </div>
+      <div class="content" id="searchContent" style="display: none">
+        <h2>Search ATM</h2>
+        <input type="text" id="searchInput" placeholder="Enter ATM name" />
+        <button onclick="searchATM()">Search</button>
+        <ul id="searchResult"></ul>
+      </div>
+      <div class="navbar">
+        <a href="#" class="tab active" id="addTab">Add ATM</a>
+        <a href="#" class="tab" id="searchTab">Search ATM</a>
+      </div>
+    </div>
+
+    <script>
+      const addTab = document.getElementById("addTab");
+      const searchTab = document.getElementById("searchTab");
+      const addContent = document.getElementById("addContent");
+      const searchContent = document.getElementById("searchContent");
+      const atmForm = document.getElementById("atmForm");
+      const searchInput = document.getElementById("searchInput");
+      const atmList = document.getElementById("atmList");
+      const searchResult = document.getElementById("searchResult");
+
+      // Sample ATM data
+      let atmData = [];
+
+      addTab.addEventListener("click", function (event) {
+        event.preventDefault();
+        addTab.classList.add("active");
+        searchTab.classList.remove("active");
+        addContent.style.display = "block";
+        searchContent.style.display = "none";
+        atmForm.reset();
+        atmList.innerHTML = "";
+      });
+
+      searchTab.addEventListener("click", function (event) {
+        event.preventDefault();
+        searchTab.classList.add("active");
+        addTab.classList.remove("active");
+        searchContent.style.display = "block";
+        addContent.style.display = "none";
+        searchInput.value = "";
+        searchResult.innerHTML = "";
+      });
+
+      atmForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+        const atmName = atmForm.elements["atmName"].value;
+        const atmLocation = atmForm.elements["atmLocation"].value;
+        const atmImage = atmForm.elements["atmImage"].value; // Assuming you handle image upload elsewhere
+        const atmRecord = {
+          name: atmName,
+          location: atmLocation,
+          image: atmImage,
+        };
+        atmData.push(atmRecord);
+        displayATMList(atmData);
+        atmForm.reset();
+      });
+
+      function displayATMList(data) {
+        atmList.innerHTML = "";
+        data.forEach((atm, index) => {
+          const listItem = document.createElement("li");
+          listItem.classList.add("atm-item");
+          listItem.innerHTML = `
+                    <h3>${atm.name}</h3>
+                    <p>Location: ${atm.location}</p>
+                    <img src="${atm.image}" alt="${atm.name}">
+                `;
+          atmList.appendChild(listItem);
+        });
+      }
+
+      function searchATM() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const searchResults = atmData.filter((atm) =>
+          atm.name.toLowerCase().includes(searchTerm)
+        );
+        displaySearchResults(searchResults);
+      }
+
+      function displaySearchResults(results) {
+        searchResult.innerHTML = "";
+        results.forEach((result) => {
+          const listItem = document.createElement("li");
+          listItem.innerHTML = `
+                    <h3>${result.name}</h3>
+                    <p>Location: ${result.location}</p>
+                    <img src="${result.image}" alt="${result.name}">
+                `;
+          searchResult.appendChild(listItem);
+        });
+      }
+    </script>
+  </body>
+</html>
